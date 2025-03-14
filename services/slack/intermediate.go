@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"unicode/utf8"
+	"path/filepath"
 
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/pkg/errors"
@@ -386,8 +387,7 @@ func buildChannelsByOriginalNameMap(intermediate *Intermediate) map[string]*Inte
 }
 
 func getNormalisedFilePath(file *SlackFile, attachmentsDir string) string {
-	n := makeAlphaNum(file.Name, '.', '-', '_')
-	p := path.Join(attachmentsDir, fmt.Sprintf("%s_%s", file.Id, n))
+	p := path.Join(attachmentsDir, fmt.Sprintf("%s/%s", file.Id, file.Name))
 	return norm.NFC.String(p)
 }
 
@@ -451,6 +451,13 @@ func addZipFileToPost(file *SlackFile, uploads map[string]*zip.File, post *Inter
 	defer zipFileReader.Close()
 
 	destFilePath := getNormalisedFilePath(file, attachmentsInternal)
+
+	dirname := filepath.Dir(path.Join(attachmentsDir, destFilePath))
+	err = os.MkdirAll(dirname, 0755)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create dir %s in the attachments directory", dirname)
+	}
+
 	destFile, err := os.Create(path.Join(attachmentsDir, destFilePath))
 	if err != nil {
 		return errors.Wrapf(err, "failed to create file %s in the attachments directory", file.Id)
