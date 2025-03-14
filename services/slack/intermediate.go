@@ -149,6 +149,7 @@ type Intermediate struct {
 	GroupChannels   []*IntermediateChannel       `json:"group_channels"`
 	DirectChannels  []*IntermediateChannel       `json:"direct_channels"`
 	UsersById       map[string]*IntermediateUser `json:"users"`
+	UsersByBotId    map[string]*IntermediateUser `json:"users"`
 	Posts           []*IntermediatePost          `json:"posts"`
 }
 
@@ -158,6 +159,7 @@ func (t *Transformer) TransformUsers(users []SlackUser, skipEmptyEmails bool, de
 	t.Logger.Debugf("TransformUsers: Input SlackUser structs: %+v", users)
 
 	resultUsers := map[string]*IntermediateUser{}
+	resultUsersByBotId := map[string]*IntermediateUser{}
 	for _, user := range users {
 		var deleteAt int64 = 0
 		if user.Deleted {
@@ -188,16 +190,20 @@ func (t *Transformer) TransformUsers(users []SlackUser, skipEmptyEmails bool, de
 
 		t.Logger.Debugf("TransformUsers: newUser IntermediateUser struct: %+v", newUser)
 
-		if user.IsBot {
-			newUser.Id = user.Profile.BotID
-		}
+//		if user.IsBot {
+//			newUser.Id = user.Profile.BotID
+//		}
 
 		newUser.Sanitise(t.Logger, defaultEmailDomain, skipEmptyEmails)
 		resultUsers[newUser.Id] = newUser
+		if user.IsBot {
+			resultUsersByBotId[user.Profile.BotID] = newUser
+		}
 		t.Logger.Debugf("Slack user with email %s and password %s has been imported.", newUser.Email, newUser.Password)
 	}
 
 	t.Intermediate.UsersById = resultUsers
+	t.Intermediate.UsersByBotId = resultUsersByBotId
 }
 
 func filterValidMembers(members []string, users map[string]*IntermediateUser) []string {
@@ -694,7 +700,8 @@ func (t *Transformer) TransformPosts(slackExport *SlackExport, attachmentsDir st
 					post.BotId = post.User
 				}
 
-				author := t.Intermediate.UsersById[post.BotId]
+//				author := t.Intermediate.UsersById[post.BotId]
+				author := t.Intermediate.UsersByBotId[post.BotId]
 				if author == nil {
 					t.CreateIntermediateUser(post.BotId)
 					author = t.Intermediate.UsersById[post.BotId]
