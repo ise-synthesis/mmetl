@@ -78,6 +78,7 @@ func (c *IntermediateChannel) Sanitise(logger log.FieldLogger) {
 type IntermediateUser struct {
 	Id          string   `json:"id"`
 	Username    string   `json:"username"`
+	Nickname    string   `json:"nickname"`
 	FirstName   string   `json:"first_name"`
 	LastName    string   `json:"last_name"`
 	Position    string   `json:"position"`
@@ -180,6 +181,7 @@ func (t *Transformer) TransformUsers(users []SlackUser, skipEmptyEmails bool, de
 		newUser := &IntermediateUser{
 			Id:        user.Id,
 			Username:  user.Username,
+			Nickname:  user.Profile.DisplayName,
 			FirstName: firstName,
 			LastName:  lastName,
 			Position:  user.Profile.Title,

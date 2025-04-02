@@ -30,6 +30,7 @@ type SlackChannelSub struct {
 type SlackProfile struct {
 	BotID    string `json:"bot_id"`
 	RealName string `json:"real_name"`
+	DisplayName string `json:"display_name"`
 	Email    string `json:"email"`
 	Title    string `json:"title"`
 }

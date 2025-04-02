@@ -112,7 +112,7 @@ func GetImportLineFromUser(user *IntermediateUser, team string) *imports.LineImp
 		User: &imports.UserImportData{
 			Username:  model.NewString(user.Username),
 			Email:     model.NewString(user.Email),
-			Nickname:  model.NewString(""),
+			Nickname:  model.NewString(user.Nickname),
 			FirstName: model.NewString(user.FirstName),
 			LastName:  model.NewString(user.LastName),
 			Position:  model.NewString(user.Position),
